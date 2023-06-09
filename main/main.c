@@ -70,13 +70,17 @@ void app_main() {
     ESP_ERROR_CHECK(esp_ieee802154_set_promiscuous(false));
     ESP_ERROR_CHECK(esp_ieee802154_set_rx_when_idle(true));
 
-    ESP_ERROR_CHECK(esp_ieee802154_set_panid(PANID));
-    ESP_ERROR_CHECK(esp_ieee802154_set_channel(CHANNEL));
-
+    // esp_ieee802154_set_extended_address needs the MAC in reversed byte order
     uint8_t eui64[8] = {0};
     esp_read_mac(eui64, ESP_MAC_IEEE802154);
-    esp_ieee802154_set_extended_address(eui64);
+    uint8_t eui64_rev[8] = {0};
+    for (int i=0; i<8; i++) {
+        eui64_rev[7-i] = eui64[i];
+    }
+    esp_ieee802154_set_extended_address(eui64_rev);
     esp_ieee802154_set_short_address(SHORT_TEST_RECEIVER);
+    ESP_ERROR_CHECK(esp_ieee802154_set_panid(PANID));
+    ESP_ERROR_CHECK(esp_ieee802154_set_channel(CHANNEL));
 
     ESP_ERROR_CHECK(esp_ieee802154_receive());
 
